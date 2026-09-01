@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#faf8f3" />
+  <meta name="description" content="منيو مخابز جراند الإلكتروني — اختر طلبك وأرسله مباشرة عبر واتساب." />
+  <meta property="og:title" content="مخابز جراند | Grand Bakery" />
+  <meta property="og:description" content="منيو مخابز جراند الإلكتروني في عمّان." />
+  <title>مخابز جراند | Grand Bakery</title>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://i.ibb.co" crossorigin />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="مخابز جراند">
+      <img src="https://grandbakery-jo.vercel.app/logogrand.png" width="150" height="50" alt="مخابز جراند" />
+    </a>
+    <a class="header-call" href="tel:+962792089999">اتصل بنا</a>
+  </header>
+
+  <main id="top">
+    <section class="intro">
+      <p class="eyebrow">GRAND BAKERY · AMMAN</p>
+      <h1>كل ما تحبّه،<br><em>مخبوز اليوم.</em></h1>
+      <p class="intro-copy">اختر من المنيو، أضف طلبك للسلة، وأرسله مباشرة إلى واتساب للتأكيد.</p>
+      <div class="service-row">
+        <span>يوميًا 7 صباحًا — 12 ليلًا</span>
+        <span>توصيل واستلام</span>
+      </div>
+    </section>
+
+    <section class="menu-section" aria-labelledby="menu-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">OUR MENU</p>
+          <h2 id="menu-title">اختار القسم</h2>
+        </div>
+        <button class="search-toggle" id="searchToggle" type="button" aria-label="بحث">⌕</button>
+      </div>
+      <label class="search-box" id="searchBox" hidden>
+        <span class="sr-only">ابحث عن صنف</span>
+        <input id="searchInput" type="search" placeholder="ابحث عن بيتزا، منقوشة، كيك…" autocomplete="off" />
+      </label>
+      <div id="status" class="status">جاري تجهيز المنيو…</div>
+      <div id="categories" class="category-grid" aria-live="polite"></div>
+      <div id="productsView" class="products-view" hidden>
+        <button id="backButton" class="back-button" type="button">→ جميع الأقسام</button>
+        <div class="products-heading">
+          <p class="eyebrow">FRESHLY MADE</p>
+          <h2 id="activeCategory"></h2>
+        </div>
+        <div id="products" class="product-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="cart-bar" id="cartBar" hidden>
+    <button id="openCart" type="button">
+      <span><b id="cartCount">0</b> أصناف</span>
+      <strong>عرض الطلب</strong>
+      <span id="cartTotal">0.00 د.أ</span>
+    </button>
+  </aside>
+
+  <dialog id="cartDialog" class="cart-dialog">
+    <form method="dialog" class="dialog-head">
+      <div><p class="eyebrow">YOUR ORDER</p><h2>طلبك</h2></div>
+      <button aria-label="إغلاق">×</button>
+    </form>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-summary"><span>المجموع</span><strong id="dialogTotal">0.00 د.أ</strong></div>
+    <fieldset class="fulfillment">
+      <legend>طريقة استلام الطلب</legend>
+      <label><input type="radio" name="fulfillment" value="توصيل"> توصيل</label>
+      <label><input type="radio" name="fulfillment" value="استلام من المخبز"> استلام من المخبز</label>
+    </fieldset>
+    <label class="order-note" id="addressField" hidden>عنوان التوصيل
+      <textarea id="deliveryAddress" rows="2" placeholder="المنطقة، الشارع، وأقرب نقطة دالة"></textarea>
+    </label>
+    <label class="order-note">ملاحظات الطلب
+      <textarea id="orderNote" rows="2" placeholder="مثال: بدون زيتون، وقت الاستلام 5 مساءً"></textarea>
+    </label>
+    <button id="whatsappButton" class="whatsapp-button" type="button">إرسال الطلب عبر واتساب</button>
+  </dialog>
+
+  <footer>
+    <img src="https://grandbakery-jo.vercel.app/logogrand.png" width="170" height="57" alt="مخابز جراند" loading="lazy" />
+    <p>الدوار السابع، شارع عبد الرحيم منيب جردانة، عمّان</p>
+    <div><a href="tel:+962792089999">0792089999</a><a href="https://www.instagram.com/grandbakeryjo/">Instagram</a></div>
+  </footer>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
