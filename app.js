@@ -38,7 +38,24 @@ function changeQty(id,delta){const item=state.cart.get(id);if(!item)return;item.
 function totals(){const items=[...state.cart.values()];return{count:items.reduce((n,i)=>n+i.qty,0),total:items.reduce((n,i)=>n+Number(i.price)*i.qty,0)}}
 function updateCart(){const {count,total}=totals();$('#cartBar').hidden=!count;$('#cartCount').textContent=count;$('#cartTotal').textContent=`${total.toFixed(2)} د.أ`;$('#dialogTotal').textContent=`${total.toFixed(2)} د.أ`}
 function renderCart(){const items=[...state.cart.values()];$('#cartItems').innerHTML=items.map(i=>`<div class="cart-item"><div><strong>${escapeHtml(i.nameAr)}</strong><small>${Number(i.price).toFixed(2)} د.أ</small></div><div class="qty"><button data-qty="${i.id}" data-delta="-1">−</button><b>${i.qty}</b><button data-qty="${i.id}" data-delta="1">+</button></div><strong>${(Number(i.price)*i.qty).toFixed(2)}</strong></div>`).join('')}
-function buildWhatsAppLink(){const method=document.querySelector('input[name="fulfillment"]:checked')?.value;if(!method){alert('اختار توصيل أو استلام من المخبز أولًا');return null}const address=$('#deliveryAddress').value.trim();if(method==='توصيل'&&!address){alert('اكتب عنوان التوصيل أولًا');$('#deliveryAddress').focus();return null}const {total}=totals();let message='مرحباً مخابز جراند، أود تأكيد الطلب التالي:\n\n';for(const i of state.cart.values())message+=`• ${i.nameAr} × ${i.qty} — ${(Number(i.price)*i.qty).toFixed(2)} د.أ\n`;message+=`\nالمجموع: ${total.toFixed(2)} د.أ\nطريقة الاستلام: ${method}`;if(address)message+=`\nعنوان التوصيل: ${address}`;const note=$('#orderNote').value.trim();if(note)message+=`\n\nملاحظات: ${note}`;return `https://wa.me/962792089999?text=${encodeURIComponent(message)}`}
+function buildWhatsAppLink({orderId='',name='',phone='',method,address='',note=''}={}){
+  method=method||document.querySelector('input[name="fulfillment"]:checked')?.value;
+  address=address||$('#deliveryAddress').value.trim();
+  note=note||$('#orderNote').value.trim();
+  if(!method){alert('اختار توصيل أو استلام من المخبز أولًا');return null}
+  if(method==='توصيل'&&!address){alert('اكتب عنوان التوصيل أولًا');$('#deliveryAddress').focus();return null}
+  const {total}=totals();
+  let message='مرحباً مخابز جراند، أود تأكيد الطلب التالي:\n\n';
+  if(orderId)message+=`رقم الطلب: ${orderId}\n`;
+  if(name)message+=`اسم العميل: ${name}\n`;
+  if(phone)message+=`رقم الهاتف: ${phone}\n`;
+  if(orderId||name||phone)message+='\n';
+  for(const i of state.cart.values())message+=`• ${i.nameAr} × ${i.qty} — ${(Number(i.price)*i.qty).toFixed(2)} د.أ\n`;
+  message+=`\nالمجموع: ${total.toFixed(2)} د.أ\nطريقة الاستلام: ${method}`;
+  if(address)message+=`\nعنوان التوصيل: ${address}`;
+  if(note)message+=`\n\nملاحظات: ${note}`;
+  return `https://wa.me/962792089999?text=${encodeURIComponent(message)}`;
+}
 
 $('#categories').addEventListener('click',e=>{const card=e.target.closest('[data-category]');if(card)openCategory(card.dataset.category).catch(showError)});
 $('#products').addEventListener('click',e=>{const button=e.target.closest('[data-add]');if(button)addItem(button.dataset.add)});
@@ -69,12 +86,16 @@ $('#whatsappButton').addEventListener('click',async()=>{
     });
     const result=await response.json();
     if(!response.ok)throw new Error(result.error||'تعذر إرسال الطلب');
-    alert(`تم استلام طلبك بنجاح\nرقم الطلب: ${result.orderId}`);
+    const whatsappLink=buildWhatsAppLink({
+      orderId:result.orderId,name,phone,method,address,note:$('#orderNote').value.trim()
+    });
+    alert(`تم استلام طلبك بنجاح ووصل للمخبز\nرقم الطلب: ${result.orderId}\nسيتم فتح واتساب لتأكيد الطلب، وهذه الخطوة اختيارية.`);
     state.cart.clear();updateCart();$('#cartDialog').close();
     $('#deliveryAddress').value='';$('#orderNote').value='';
+    if(whatsappLink)window.location.assign(whatsappLink);
   }catch(error){
     if(confirm(`${error.message}\nهل تريد إرسال الطلب عبر واتساب بدلًا من ذلك؟`)){
-      const link=buildWhatsAppLink();if(link)window.open(link,'_blank','noopener');
+      const link=buildWhatsAppLink({name,phone,method,address,note:$('#orderNote').value.trim()});if(link)window.location.assign(link);
     }
   }finally{button.disabled=false;button.textContent='تأكيد وإرسال الطلب'}
 });
