@@ -46,7 +46,38 @@ $('#backButton').addEventListener('click',()=>{state.active=null;renderCategorie
 $('#openCart').addEventListener('click',()=>{renderCart();$('#cartDialog').showModal()});
 $('#cartItems').addEventListener('click',e=>{const button=e.target.closest('[data-qty]');if(button)changeQty(button.dataset.qty,Number(button.dataset.delta))});
 document.querySelectorAll('input[name="fulfillment"]').forEach(input=>input.addEventListener('change',()=>{$('#addressField').hidden=input.value!=='توصيل'||!input.checked}));
-$('#whatsappButton').addEventListener('click',()=>{const link=buildWhatsAppLink();if(link)window.open(link,'_blank','noopener')});
+$('#whatsappButton').addEventListener('click',async()=>{
+  const method=document.querySelector('input[name="fulfillment"]:checked')?.value;
+  const name=$('#customerName').value.trim();
+  const phone=$('#customerPhone').value.trim().replace(/\s/g,'');
+  const address=$('#deliveryAddress').value.trim();
+  if(!state.cart.size)return alert('السلة فارغة');
+  if(!name)return alert('اكتب الاسم أولًا');
+  if(!/^0?7\d{8}$/.test(phone))return alert('اكتب رقم موبايل أردني صحيح');
+  if(!method)return alert('اختار توصيل أو استلام من المخبز أولًا');
+  if(method==='توصيل'&&!address)return alert('اكتب عنوان التوصيل أولًا');
+  const button=$('#whatsappButton');
+  button.disabled=true;button.textContent='جاري إرسال الطلب…';
+  try{
+    const response=await fetch('https://grand-bakery-marketing-bot.onrender.com/api/orders',{
+      method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({
+        customer:{name,phone},fulfillment:method==='توصيل'?'delivery':'pickup',
+        address,note:$('#orderNote').value.trim(),
+        items:[...state.cart.values()].map(i=>({id:i.id,name:i.nameAr,qty:i.qty,price:Number(i.price)}))
+      })
+    });
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.error||'تعذر إرسال الطلب');
+    alert(`تم استلام طلبك بنجاح\nرقم الطلب: ${result.orderId}`);
+    state.cart.clear();updateCart();$('#cartDialog').close();
+    $('#deliveryAddress').value='';$('#orderNote').value='';
+  }catch(error){
+    if(confirm(`${error.message}\nهل تريد إرسال الطلب عبر واتساب بدلًا من ذلك؟`)){
+      const link=buildWhatsAppLink();if(link)window.open(link,'_blank','noopener');
+    }
+  }finally{button.disabled=false;button.textContent='تأكيد وإرسال الطلب'}
+});
 $('#searchToggle').addEventListener('click',()=>{$('#searchBox').hidden=!$('#searchBox').hidden;if(!$('#searchBox').hidden)$('#searchInput').focus()});
 $('#searchInput').addEventListener('input',async e=>{const q=e.target.value.trim().toLowerCase();if(!q){state.active?renderProducts(state.products.filter(p=>p.categoryId===state.active)):renderCategories();return}if(!state.products.length)state.products=await getCollection('menu');$('#categories').hidden=true;$('#productsView').hidden=false;$('#activeCategory').textContent='نتائج البحث';renderProducts(state.products.filter(p=>String(p.nameAr).toLowerCase().includes(q)))});
 function showError(){ $('#status').hidden=false;$('#status').innerHTML='تعذر تحميل المنيو الآن. <button onclick="location.reload()">حاول مرة أخرى</button>' }
