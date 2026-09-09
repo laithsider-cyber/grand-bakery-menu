@@ -24,7 +24,7 @@
     <section class="intro">
       <p class="eyebrow">GRAND BAKERY · AMMAN</p>
       <h1>كل ما تحبّه،<br><em>مخبوز اليوم.</em></h1>
-      <p class="intro-copy">اختر من المنيو، أضف طلبك للسلة، وأرسله مباشرة إلى واتساب للتأكيد.</p>
+      <p class="intro-copy">اختر من المنيو، أضف طلبك للسلة، وأرسله مباشرة إلى مخابز جراند.</p>
       <div class="service-row">
         <span>يوميًا 7 صباحًا — 12 ليلًا</span>
         <span>توصيل واستلام</span>
@@ -71,6 +71,12 @@
     </form>
     <div id="cartItems" class="cart-items"></div>
     <div class="cart-summary"><span>المجموع</span><strong id="dialogTotal">0.00 د.أ</strong></div>
+    <label class="order-note">الاسم
+      <input id="customerName" type="text" autocomplete="name" placeholder="اسم العميل" />
+    </label>
+    <label class="order-note">رقم الموبايل
+      <input id="customerPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="07XXXXXXXX" />
+    </label>
     <fieldset class="fulfillment">
       <legend>طريقة استلام الطلب</legend>
       <label><input type="radio" name="fulfillment" value="توصيل"> توصيل</label>
@@ -82,7 +88,7 @@
     <label class="order-note">ملاحظات الطلب
       <textarea id="orderNote" rows="2" placeholder="مثال: بدون زيتون، وقت الاستلام 5 مساءً"></textarea>
     </label>
-    <button id="whatsappButton" class="whatsapp-button" type="button">إرسال الطلب عبر واتساب</button>
+    <button id="whatsappButton" class="whatsapp-button" type="button">تأكيد وإرسال الطلب</button>
   </dialog>
 
   <footer>
