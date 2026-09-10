@@ -5,6 +5,7 @@ const value=v=>v?.stringValue??Number(v?.integerValue??v?.doubleValue??0);
 const parseDoc=d=>({id:d.name.split('/').pop(),...Object.fromEntries(Object.entries(d.fields||{}).map(([k,v])=>[k,value(v)]))});
 const escapeHtml=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+
 async function getCollection(name){
   const cached=sessionStorage.getItem(`gb-${name}`);
   if(cached){const parsed=JSON.parse(cached);if(Date.now()-parsed.time<300000)return parsed.data}
@@ -16,10 +17,12 @@ async function getCollection(name){
   return data;
 }
 
+
 function renderCategories(){
   $('#status').hidden=true;$('#productsView').hidden=true;$('#categories').hidden=false;
   $('#categories').innerHTML=state.categories.map((cat,i)=>`<button class="category-card" data-category="${cat.id}"><img src="${escapeHtml(cat.img)}" alt="" loading="${i<4?'eager':'lazy'}" decoding="async"><span>${escapeHtml(cat.name)}</span></button>`).join('');
 }
+
 
 async function openCategory(id){
   state.active=id;const category=state.categories.find(c=>c.id===id);
@@ -29,9 +32,11 @@ async function openCategory(id){
   renderProducts(state.products.filter(p=>p.categoryId===id));window.scrollTo({top:$('#productsView').offsetTop-90,behavior:'smooth'});
 }
 
+
 function renderProducts(items){
   $('#products').innerHTML=items.length?items.map(item=>`<article class="product-card"><img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.nameAr)}" loading="lazy" decoding="async"><div class="product-info"><h3>${escapeHtml(item.nameAr)}</h3><div class="product-bottom"><span class="price">${Number(item.price).toFixed(2)} د.أ</span><button class="add-button" data-add="${item.id}" type="button">+ أضف</button></div></div></article>`).join(''):'<div class="status">لا توجد منتجات في هذا القسم حاليًا.</div>';
 }
+
 
 function addItem(id){const item=state.products.find(p=>p.id===id);if(!item)return;const existing=state.cart.get(id);state.cart.set(id,{...item,qty:(existing?.qty||0)+1});updateCart()}
 function changeQty(id,delta){const item=state.cart.get(id);if(!item)return;item.qty+=delta;if(item.qty<=0)state.cart.delete(id);else state.cart.set(id,item);updateCart();renderCart()}
@@ -50,12 +55,13 @@ function buildWhatsAppLink({orderId='',name='',phone='',method,address='',note='
   if(name)message+=`اسم العميل: ${name}\n`;
   if(phone)message+=`رقم الهاتف: ${phone}\n`;
   if(orderId||name||phone)message+='\n';
-  for(const i of state.cart.values())message+=`• ${i.nameAr} × ${i.qty} — ${(Number(i.price)*i.qty).toFixed(2)} د.أ\n`;
-  message+=`\nالمجموع: ${total.toFixed(2)} د.أ\nطريقة الاستلام: ${method}`;
+  for(const i of state.cart.values())message+=`• *${i.nameAr} (${i.qty})* — ${(Number(i.price)*i.qty).toFixed(2)} د.أ\n`;
+  message+=`\n*المجموع: ${total.toFixed(2)} د.أ*\nطريقة الاستلام: ${method}`;
   if(address)message+=`\nعنوان التوصيل: ${address}`;
   if(note)message+=`\n\nملاحظات: ${note}`;
   return `https://wa.me/962792089999?text=${encodeURIComponent(message)}`;
 }
+
 
 $('#categories').addEventListener('click',e=>{const card=e.target.closest('[data-category]');if(card)openCategory(card.dataset.category).catch(showError)});
 $('#products').addEventListener('click',e=>{const button=e.target.closest('[data-add]');if(button)addItem(button.dataset.add)});
@@ -103,4 +109,5 @@ $('#searchToggle').addEventListener('click',()=>{$('#searchBox').hidden=!$('#sea
 $('#searchInput').addEventListener('input',async e=>{const q=e.target.value.trim().toLowerCase();if(!q){state.active?renderProducts(state.products.filter(p=>p.categoryId===state.active)):renderCategories();return}if(!state.products.length)state.products=await getCollection('menu');$('#categories').hidden=true;$('#productsView').hidden=false;$('#activeCategory').textContent='نتائج البحث';renderProducts(state.products.filter(p=>String(p.nameAr).toLowerCase().includes(q)))});
 function showError(){ $('#status').hidden=false;$('#status').innerHTML='تعذر تحميل المنيو الآن. <button onclick="location.reload()">حاول مرة أخرى</button>' }
 
-getCollection('categories').then(data=>{state.categories=data;renderCategories()}).catch(showError);
+
+getCollection('categories').then(data=>{state.categories=data;renderCategories()}).catch(showError)
