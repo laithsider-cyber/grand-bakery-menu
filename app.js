@@ -9,7 +9,8 @@ const escapeHtml=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':
 
 
 async function getCollection(name){
-  const cached=sessionStorage.getItem(`gb-${name}`);
+  const shouldCache=name!=='menu';
+  const cached=shouldCache?sessionStorage.getItem(`gb-${name}`):null;
   if(cached){const parsed=JSON.parse(cached);if(Date.now()-parsed.time<300000)return parsed.data}
   const documents=[];let pageToken='';
   do{
@@ -20,7 +21,7 @@ async function getCollection(name){
     documents.push(...(json.documents||[]));pageToken=json.nextPageToken||'';
   }while(pageToken);
   const data=documents.map(parseDoc);
-  sessionStorage.setItem(`gb-${name}`,JSON.stringify({time:Date.now(),data}));
+  if(shouldCache){try{sessionStorage.setItem(`gb-${name}`,JSON.stringify({time:Date.now(),data}))}catch{}}
   return data;
 }
 
