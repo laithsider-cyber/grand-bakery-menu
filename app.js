@@ -6,22 +6,33 @@ const parseDoc=d=>({id:d.name.split('/').pop(),...Object.fromEntries(Object.entr
 const escapeHtml=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 
+
+
 async function getCollection(name){
   const cached=sessionStorage.getItem(`gb-${name}`);
   if(cached){const parsed=JSON.parse(cached);if(Date.now()-parsed.time<300000)return parsed.data}
-  const response=await fetch(API+name);
-  if(!response.ok)throw new Error('تعذر تحميل القائمة');
-  const json=await response.json();
-  const data=(json.documents||[]).map(parseDoc);
+  const documents=[];let pageToken='';
+  do{
+    const url=API+name+'?pageSize=1000'+(pageToken?'&pageToken='+encodeURIComponent(pageToken):'');
+    const response=await fetch(url);
+    if(!response.ok)throw new Error('تعذر تحميل القائمة');
+    const json=await response.json();
+    documents.push(...(json.documents||[]));pageToken=json.nextPageToken||'';
+  }while(pageToken);
+  const data=documents.map(parseDoc);
   sessionStorage.setItem(`gb-${name}`,JSON.stringify({time:Date.now(),data}));
   return data;
 }
+
+
 
 
 function renderCategories(){
   $('#status').hidden=true;$('#productsView').hidden=true;$('#categories').hidden=false;
   $('#categories').innerHTML=state.categories.map((cat,i)=>`<button class="category-card" data-category="${cat.id}"><img src="${escapeHtml(cat.img)}" alt="" loading="${i<4?'eager':'lazy'}" decoding="async"><span>${escapeHtml(cat.name)}</span></button>`).join('');
 }
+
+
 
 
 async function openCategory(id){
@@ -33,9 +44,13 @@ async function openCategory(id){
 }
 
 
+
+
 function renderProducts(items){
   $('#products').innerHTML=items.length?items.map(item=>`<article class="product-card"><img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.nameAr)}" loading="lazy" decoding="async"><div class="product-info"><h3>${escapeHtml(item.nameAr)}</h3><div class="product-bottom"><span class="price">${Number(item.price).toFixed(2)} د.أ</span><button class="add-button" data-add="${item.id}" type="button">+ أضف</button></div></div></article>`).join(''):'<div class="status">لا توجد منتجات في هذا القسم حاليًا.</div>';
 }
+
+
 
 
 function addItem(id){const item=state.products.find(p=>p.id===id);if(!item)return;const existing=state.cart.get(id);state.cart.set(id,{...item,qty:(existing?.qty||0)+1});updateCart()}
@@ -61,6 +76,8 @@ function buildWhatsAppLink({orderId='',name='',phone='',method,address='',note='
   if(note)message+=`\n\nملاحظات: ${note}`;
   return `https://wa.me/962792089999?text=${encodeURIComponent(message)}`;
 }
+
+
 
 
 $('#categories').addEventListener('click',e=>{const card=e.target.closest('[data-category]');if(card)openCategory(card.dataset.category).catch(showError)});
@@ -110,4 +127,6 @@ $('#searchInput').addEventListener('input',async e=>{const q=e.target.value.trim
 function showError(){ $('#status').hidden=false;$('#status').innerHTML='تعذر تحميل المنيو الآن. <button onclick="location.reload()">حاول مرة أخرى</button>' }
 
 
-getCollection('categories').then(data=>{state.categories=data;renderCategories()}).catch(showError)
+
+
+getCollection('categories').then(data=>{state.categories=data;renderCategories()}).catch(showError
