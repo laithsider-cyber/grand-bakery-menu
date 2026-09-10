@@ -129,4 +129,4 @@ function showError(){ $('#status').hidden=false;$('#status').innerHTML='تعذر
 
 
 
-getCollection('categories').then(data=>{state.categories=data;renderCategories()}).catch(showError
+getCollection('categories').then(data=>{state.categories=data;renderCategories()}).catch(showError)
